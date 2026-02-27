@@ -54,6 +54,8 @@ const membersCount = document.getElementById("membersCount");
 const expensesCount = document.getElementById("expensesCount");
 const expensesList = document.getElementById("expensesList");
 
+const summaryBody = document.getElementById("summaryBody");
+const settleList = document.getElementById("settleList");
 // ===== helpers =====
 function setStatus(msg) {
   statusText.textContent = `Status: ${msg}`;
@@ -68,6 +70,69 @@ function memberNameById(id) {
   return state.members.find(m => m.id === id)?.name ?? "(unknown)";
 }
 
+function computeBalances() {
+  // init map: memberId -> { paid, owed, net }
+  const map = {};
+  for (const m of state.members) {
+    map[m.id] = { memberId: m.id, name: m.name, paid: 0, owed: 0, net: 0 };
+  }
+
+  for (const e of state.expenses) {
+    if (!map[e.payerId]) continue;
+    map[e.payerId].paid += Number(e.amount) || 0;
+
+    const k = (e.splitWithIds || []).length;
+    if (!k) continue;
+
+    const amount = Number(e.amount) || 0;
+    const base = Math.floor(amount / k);
+    let rem = amount - base * k; // remainder in VND (ensures exact sum)
+
+    for (const id of e.splitWithIds) {
+      if (!map[id]) continue;
+      const share = base + (rem > 0 ? 1 : 0);
+      if (rem > 0) rem -= 1;
+      map[id].owed += share;
+    }
+  }
+
+  for (const id in map) {
+    map[id].net = map[id].paid - map[id].owed;
+  }
+
+  return Object.values(map);
+}
+
+function computeSettlements(balances) {
+  // debtors pay creditors
+  const debtors = balances
+    .filter(b => b.net < 0)
+    .map(b => ({ id: b.memberId, name: b.name, amt: -b.net }));
+
+  const creditors = balances
+    .filter(b => b.net > 0)
+    .map(b => ({ id: b.memberId, name: b.name, amt: b.net }));
+
+  // optional: sort to make output stable
+  debtors.sort((a, b) => b.amt - a.amt);
+  creditors.sort((a, b) => b.amt - a.amt);
+
+  const res = [];
+  let i = 0, j = 0;
+
+  while (i < debtors.length && j < creditors.length) {
+    const pay = Math.min(debtors[i].amt, creditors[j].amt);
+    if (pay > 0) {
+      res.push({ from: debtors[i].name, to: creditors[j].name, amount: pay });
+      debtors[i].amt -= pay;
+      creditors[j].amt -= pay;
+    }
+    if (debtors[i].amt === 0) i++;
+    if (creditors[j].amt === 0) j++;
+  }
+
+  return res;
+}
 // ===== render =====
 function renderMembers() {
   membersList.innerHTML = "";
@@ -149,6 +214,50 @@ function renderAll() {
   renderSplitWith();
   renderExpenses();
   renderCounters();
+  renderSummaryAndSettle();
+}
+
+function renderSummaryAndSettle() {
+  if (state.members.length === 0) {
+    summaryBody.innerHTML = "";
+    settleList.innerHTML = `<li class="small">Add members first.</li>`;
+    return;
+  }
+
+  const balances = computeBalances();
+
+  // Summary table
+  summaryBody.innerHTML = "";
+  for (const b of balances) {
+    const tr = document.createElement("tr");
+    const netClass = b.net >= 0 ? "netPos" : "netNeg";
+    tr.innerHTML = `
+      <td>${escapeHtml(b.name)}</td>
+      <td>${fmtVND(b.paid)}</td>
+      <td>${fmtVND(b.owed)}</td>
+      <td class="${netClass}">${fmtVND(b.net)}</td>
+    `;
+    summaryBody.appendChild(tr);
+  }
+
+  // Settle list
+  const settles = computeSettlements(balances);
+  settleList.innerHTML = "";
+  if (settles.length === 0) {
+    settleList.innerHTML = `<li class="small">No settlements needed.</li>`;
+    return;
+  }
+  for (const s of settles) {
+    const li = document.createElement("li");
+    li.className = "item";
+    li.innerHTML = `
+      <div class="itemLeft">
+        <b>${escapeHtml(s.from)} → ${escapeHtml(s.to)}</b>
+        <span class="small">${fmtVND(s.amount)}</span>
+      </div>
+    `;
+    settleList.appendChild(li);
+  }
 }
 
 // ===== actions =====
