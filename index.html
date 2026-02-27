@@ -13,11 +13,26 @@
   </header>
 
   <main class="container">
-    <section class="card">
-      <h2>Coming soon</h2>
-      <p>This is the demo page. UI + logic will be added step by step.</p>
-    </section>
-  </main>
+  <section class="card">
+    <h2>Step 1: Data & Storage</h2>
+
+    <label class="label">Trip name</label>
+    <input id="tripNameInput" class="input" placeholder="e.g., Da Nang Trip" />
+
+    <div class="row">
+      <button id="saveBtn">Save</button>
+      <button id="resetBtn">Reset</button>
+      <button id="seedBtn">Load sample data</button>
+    </div>
+
+    <p class="muted" id="statusText">Status: -</p>
+
+    <hr />
+
+    <p><b>Members:</b> <span id="membersCount">0</span></p>
+    <p><b>Expenses:</b> <span id="expensesCount">0</span></p>
+  </section>
+</main>
 
   <script src="app.js"></script>
 </body>
