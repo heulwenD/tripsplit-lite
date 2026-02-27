@@ -25,3 +25,4 @@ hr { border: 0; border-top: 1px solid #eee; margin: 16px 0; }
 .table th, .table td { padding: 10px; border-bottom: 1px solid #eee; text-align: left; }
 .netPos { color: #0f766e; font-weight: 600; }
 .netNeg { color: #b91c1c; font-weight: 600; }
+.hide { display: none; }
