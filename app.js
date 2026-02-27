@@ -66,6 +66,13 @@ const exportCsvBtn = document.getElementById("exportCsvBtn");
 
 const totalSpentText = document.getElementById("totalSpentText");
 const avgPerText = document.getElementById("avgPerText");
+
+const DISPLAY_ROUND_UNIT = 1000; // 1000 VND, đổi 1 nếu muốn giữ nguyên
+function fmtVND(n) {
+  const x = Number(n) || 0;
+  const r = DISPLAY_ROUND_UNIT > 1 ? Math.round(x / DISPLAY_ROUND_UNIT) * DISPLAY_ROUND_UNIT : x;
+  return r.toLocaleString("vi-VN") + " ₫";
+}
 // ===== helpers =====
 function setStatus(msg) {
   statusText.textContent = `Status: ${msg}`;
