@@ -61,6 +61,8 @@ const exportBtn = document.getElementById("exportBtn");
 const importBtn = document.getElementById("importBtn");
 const importFileInput = document.getElementById("importFileInput");
 const copySettleBtn = document.getElementById("copySettleBtn");
+
+const exportCsvBtn = document.getElementById("exportCsvBtn");
 // ===== helpers =====
 function setStatus(msg) {
   statusText.textContent = `Status: ${msg}`;
@@ -163,6 +165,46 @@ function exportJSON() {
   URL.revokeObjectURL(url);
 
   setStatus("Exported JSON ✅");
+}
+
+function csvEscape(v) {
+  const s = String(v ?? "");
+  if (s.includes('"') || s.includes(",") || s.includes("\n")) {
+    return `"${s.replaceAll('"', '""')}"`;
+  }
+  return s;
+}
+
+function exportCSV() {
+  const rows = [];
+  rows.push(["title", "amount", "payer", "split_with", "createdAt"].map(csvEscape).join(","));
+
+  for (const e of state.expenses) {
+    const payer = memberNameById(e.payerId);
+    const splitWith = (e.splitWithIds || []).map(memberNameById).join(" | ");
+    rows.push([
+      e.title,
+      e.amount,
+      payer,
+      splitWith,
+      new Date(e.createdAt || Date.now()).toISOString()
+    ].map(csvEscape).join(","));
+  }
+
+  const csv = rows.join("\n");
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement("a");
+  const safeName = (state.tripName || "TripSplit").replaceAll(/\s+/g, "_").replaceAll(/[^\w\-]/g, "");
+  a.href = url;
+  a.download = `${safeName || "tripsplit"}_expenses.csv`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+
+  setStatus("Exported CSV ✅");
 }
 
 async function copySettlementsToClipboard() {
@@ -466,6 +508,8 @@ importFileInput.addEventListener("change", async () => {
 copySettleBtn.addEventListener("click", () => {
   copySettlementsToClipboard().catch(() => setStatus("Copy failed ❌"));
 });
+
+exportCsvBtn.addEventListener("click", exportCSV);
 // event delegation for remove buttons
 membersList.addEventListener("click", (e) => {
   const btn = e.target.closest("[data-remove-member]");
