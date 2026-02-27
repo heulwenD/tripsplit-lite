@@ -21,3 +21,7 @@ hr { border: 0; border-top: 1px solid #eee; margin: 16px 0; }
 
 .box { border: 1px solid #eee; border-radius: 10px; padding: 10px; display: grid; gap: 8px; }
 .checkRow { display: flex; gap: 8px; align-items: center; }
+.table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+.table th, .table td { padding: 10px; border-bottom: 1px solid #eee; text-align: left; }
+.netPos { color: #0f766e; font-weight: 600; }
+.netNeg { color: #b91c1c; font-weight: 600; }
