@@ -8,3 +8,16 @@ body { margin: 0; background: #f6f7fb; color: #111; }
 .row { display: flex; gap: 10px; margin-top: 12px; flex-wrap: wrap; }
 button { padding: 10px 12px; border: 0; border-radius: 10px; cursor: pointer; }
 hr { border: 0; border-top: 1px solid #eee; margin: 16px 0; }
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+
+.list { list-style: none; padding: 0; margin: 10px 0 0; display: grid; gap: 8px; }
+.item { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 12px; border: 1px solid #eee; border-radius: 10px; background: #fff; }
+.itemLeft { display: grid; gap: 2px; }
+.small { font-size: 12px; color: #666; }
+
+.btnDanger { background: #ffebee; }
+.btnGhost { background: #f3f4f6; }
+
+.box { border: 1px solid #eee; border-radius: 10px; padding: 10px; display: grid; gap: 8px; }
+.checkRow { display: flex; gap: 8px; align-items: center; }
