@@ -12,25 +12,57 @@
     <p class="muted">Split expenses, settle up fast.</p>
   </header>
 
-  <main class="container">
+  <main class="container grid">
+  <!-- LEFT: input -->
   <section class="card">
-    <h2>Step 1: Data & Storage</h2>
+    <h2>Trip</h2>
 
     <label class="label">Trip name</label>
     <input id="tripNameInput" class="input" placeholder="e.g., Da Nang Trip" />
 
     <div class="row">
-      <button id="saveBtn">Save</button>
-      <button id="resetBtn">Reset</button>
-      <button id="seedBtn">Load sample data</button>
+      <button id="saveTripBtn">Save</button>
+      <button id="resetBtn" class="btnDanger">Reset</button>
+      <button id="seedBtn">Load sample</button>
     </div>
-
-    <p class="muted" id="statusText">Status: -</p>
 
     <hr />
 
-    <p><b>Members:</b> <span id="membersCount">0</span></p>
-    <p><b>Expenses:</b> <span id="expensesCount">0</span></p>
+    <h3>Members</h3>
+    <div class="row">
+      <input id="memberNameInput" class="input" placeholder="Add member name" />
+      <button id="addMemberBtn">Add</button>
+    </div>
+
+    <ul id="membersList" class="list"></ul>
+
+    <hr />
+
+    <h3>Add expense</h3>
+    <label class="label">Title</label>
+    <input id="expenseTitleInput" class="input" placeholder="e.g., Dinner" />
+
+    <label class="label">Amount (VND)</label>
+    <input id="expenseAmountInput" class="input" type="number" min="0" placeholder="e.g., 300000" />
+
+    <label class="label">Payer</label>
+    <select id="payerSelect" class="input"></select>
+
+    <label class="label">Split with</label>
+    <div id="splitWithBox" class="box"></div>
+
+    <div class="row">
+      <button id="addExpenseBtn">Add expense</button>
+    </div>
+
+    <p class="muted" id="statusText">Status: -</p>
+  </section>
+
+  <!-- RIGHT: outputs -->
+  <section class="card">
+    <h2>Expenses</h2>
+    <div class="muted">Members: <span id="membersCount">0</span> • Expenses: <span id="expensesCount">0</span></div>
+    <ul id="expensesList" class="list"></ul>
   </section>
 </main>
 
