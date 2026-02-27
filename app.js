@@ -63,6 +63,9 @@ const importFileInput = document.getElementById("importFileInput");
 const copySettleBtn = document.getElementById("copySettleBtn");
 
 const exportCsvBtn = document.getElementById("exportCsvBtn");
+
+const totalSpentText = document.getElementById("totalSpentText");
+const avgPerText = document.getElementById("avgPerText");
 // ===== helpers =====
 function setStatus(msg) {
   statusText.textContent = `Status: ${msg}`;
@@ -304,7 +307,10 @@ function renderAll() {
   renderExpenses();
   renderCounters();
   renderSummaryAndSettle();
+  addExpenseBtn.disabled = state.members.length < 2;
+  payerSelect.disabled = state.members.length < 1;
 }
+
 
 function renderSummaryAndSettle() {
   if (state.members.length === 0) {
@@ -315,7 +321,9 @@ function renderSummaryAndSettle() {
 
   const balances = computeBalances();
 
-  
+  const total = state.expenses.reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
+totalSpentText.textContent = fmtVND(total);
+avgPerText.textContent = state.members.length ? fmtVND(Math.round(total / state.members.length)) : fmtVND(0);
   // Summary table
   summaryBody.innerHTML = "";
   for (const b of balances) {
