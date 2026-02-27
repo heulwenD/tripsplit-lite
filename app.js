@@ -56,6 +56,11 @@ const expensesList = document.getElementById("expensesList");
 
 const summaryBody = document.getElementById("summaryBody");
 const settleList = document.getElementById("settleList");
+
+const exportBtn = document.getElementById("exportBtn");
+const importBtn = document.getElementById("importBtn");
+const importFileInput = document.getElementById("importFileInput");
+const copySettleBtn = document.getElementById("copySettleBtn");
 // ===== helpers =====
 function setStatus(msg) {
   statusText.textContent = `Status: ${msg}`;
@@ -132,6 +137,48 @@ function computeSettlements(balances) {
   }
 
   return res;
+}
+
+function sanitizeImportedState(obj) {
+  // chỉ giữ đúng shape cần thiết, tránh rác
+  return {
+    tripName: typeof obj.tripName === "string" ? obj.tripName : "TripSplit Lite",
+    members: Array.isArray(obj.members) ? obj.members.filter(m => m && m.id && m.name) : [],
+    expenses: Array.isArray(obj.expenses) ? obj.expenses.filter(e => e && e.id && e.title && e.payerId && Array.isArray(e.splitWithIds)) : [],
+  };
+}
+
+function exportJSON() {
+  const data = JSON.stringify(state, null, 2);
+  const blob = new Blob([data], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement("a");
+  const safeName = (state.tripName || "TripSplit").replaceAll(/\s+/g, "_").replaceAll(/[^\w\-]/g, "");
+  a.href = url;
+  a.download = `${safeName || "tripsplit"}_data.json`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+
+  setStatus("Exported JSON ✅");
+}
+
+async function copySettlementsToClipboard() {
+  if (state.members.length === 0) return setStatus("Add members first");
+
+  const balances = computeBalances();
+  const settles = computeSettlements(balances);
+
+  if (settles.length === 0) {
+    await navigator.clipboard.writeText("No settlements needed.");
+    return setStatus("Copied ✅");
+  }
+
+  const lines = settles.map(s => `${s.from} -> ${s.to}: ${fmtVND(s.amount)}`);
+  await navigator.clipboard.writeText(lines.join("\n"));
+  setStatus("Copied settle list ✅");
 }
 // ===== render =====
 function renderMembers() {
@@ -226,6 +273,7 @@ function renderSummaryAndSettle() {
 
   const balances = computeBalances();
 
+  
   // Summary table
   summaryBody.innerHTML = "";
   for (const b of balances) {
@@ -375,6 +423,7 @@ saveTripBtn.addEventListener("click", () => {
 });
 
 resetBtn.addEventListener("click", () => {
+  if (!confirm("Reset all data? This cannot be undone.")) return;
   resetState();
   state = defaultState();
   setStatus("Reset done");
@@ -390,6 +439,33 @@ memberNameInput.addEventListener("keydown", (e) => {
 
 addExpenseBtn.addEventListener("click", addExpense);
 
+exportBtn.addEventListener("click", exportJSON);
+
+importBtn.addEventListener("click", () => {
+  importFileInput.value = "";
+  importFileInput.click();
+});
+
+importFileInput.addEventListener("change", async () => {
+  const file = importFileInput.files?.[0];
+  if (!file) return;
+
+  try {
+    const text = await file.text();
+    const obj = JSON.parse(text);
+    state = sanitizeImportedState(obj);
+    saveState(state);
+    renderAll();
+    setStatus("Imported JSON ✅");
+  } catch (err) {
+    console.error(err);
+    setStatus("Import failed (invalid JSON) ❌");
+  }
+});
+
+copySettleBtn.addEventListener("click", () => {
+  copySettlementsToClipboard().catch(() => setStatus("Copy failed ❌"));
+});
 // event delegation for remove buttons
 membersList.addEventListener("click", (e) => {
   const btn = e.target.closest("[data-remove-member]");
