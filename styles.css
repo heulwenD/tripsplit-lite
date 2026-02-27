@@ -26,3 +26,4 @@ hr { border: 0; border-top: 1px solid #eee; margin: 16px 0; }
 .netPos { color: #0f766e; font-weight: 600; }
 .netNeg { color: #b91c1c; font-weight: 600; }
 .hide { display: none; }
+.rowBetween { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
